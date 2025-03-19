@@ -17,7 +17,8 @@ After the raw layer, we process the data into a cleaned layer (ODS) where sessio
 
 - **Spark**: Chosen for its powerful distributed computing capabilities, making it ideal for fast log processing and aggregation.
 - **Delta**: Chosen over Iceberg because it’s simpler in structure and its features (like versioning, metadata, and schema evolution) are sufficient for the task. Delta is preferred because of less frequent updates (once per day), while Iceberg’s merge-on-read feature is more beneficial in high-write environments.
-![Alt text](img.png)
+
+![Logo](arch.png)
 ## Steps in Data Processing:
 
 ### 1. **Dropping Duplicates**
