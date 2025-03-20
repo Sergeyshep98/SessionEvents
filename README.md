@@ -39,6 +39,7 @@ batches/ stores data batches named according to their ingestion dates.
 set_minio.sh - Creating a bucket in S3, adding files that imitate raw data, and creating a role in S3. This file is executed when the container is started.
 
 Command to launch script
+
 **python calculate_session.py --process_date 2025-03-17 --new_table**
 
 if it's first launch, set new_table flag
