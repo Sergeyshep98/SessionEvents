@@ -38,13 +38,25 @@ batches/ stores data batches named according to their ingestion dates.
 
 set_minio.sh - Creating a bucket in S3, adding files that imitate raw data, and creating a role in S3. This file is executed when the container is started.
 
+Command to launch script
+**python calculate_session.py --process_date 2025-03-17 --new_table**
+
+if it's first launch, set new_table flag
+
+process_date - batch of events date
+
+
+
 **Before starting**
 1) Start docker-compose.yml
 
 2) downloading aws-java-sdk-bundle: curl -L -o jars/aws-java-sdk-bundle-1.12.262.jar "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar"
 
 3) downloading delta-core: curl -L -o jars/delta-core_2.12-2.2.0.jar "https://repo1.maven.org/maven2/io/delta/delta-core_2.12/2.2.0/delta-core_2.12-2.2.0.jar"
-4) downloading delta-core: curl -L -o jars/delta-core_2.12-2.2.0.jar "https://repo1.maven.org/maven2/io/delta/delta-core_2.12/2.2.0/delta-core_2.12-2.2.0.jar"                                                                   
+4) downloading delta-core: curl -L -o jars/delta-core_2.12-2.2.0.jar "https://repo1.maven.org/maven2/io/delta/delta-core_2.12/2.2.0/delta-core_2.12-2.2.0.jar"
+
+
+                                                                  
 
 
 ## Steps in SessionBuilder(The main business logic of updating sessions is contained in file calculate_session.py):
