@@ -84,6 +84,58 @@ for the following day.
 ### 10. **Using Merge**
 For touching only updated files. This approach allows us to implement idempotent process, because it doesn't matter when we launch script.
 
+### **How it looks like in Airflow**
+
+Due to time constraints and to make the project easier to grasp, I didn't set up Airflow separately. However, I decided to share how it could potentially look.
+Two Python operators (if we were using PySpark in the Airflow environment), or something else (for example, a Kubernetes operator to launch a separate driver and executors for each job). Ultimately, the choice depends on the architecture, but I wouldn't bring PySpark into the Airflow image. If we want to store Python files with Spark jobs in Airflow, we could use the PythonVirtualEnvOperator to set up a separate Python environment.
+
+An abstract sensor that would check for the arrival of a batch. Overall, it depends on the source, but I would choose a reschedule sensor to avoid occupying the pools.
+
+```python
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.sensors.base import BaseSensorOperator
+from datetime import datetime
+
+class AbstractSensor(BaseSensorOperator):
+    reschedule_interval = timedelta(seconds=30)
+    mode = 'reschedule'  
+    def poke(self, context):
+        print("Poking for condition...")
+        return True
+
+def extract_raw_data():
+    print("Extracting raw data...")
+
+def calculate_session():
+    print("Calculating session...")
+
+default_args = {
+    'owner': 'airflow',
+    'start_date': datetime(2025, 3, 20),
+    'retries': 1,
+}
+
+with DAG(
+    'calculation_session',
+    default_args=default_args,
+    schedule_interval=0 8 * * *, 
+    catchup=False,
+) as dag:
+    
+    wait_for_condition = AbstractSensor(
+        task_id='wait_for_condition'
+    )
+    
+    @task()
+    def extract_raw_data():
+        print("Extracting raw data...")
+
+    @task()
+    def calculate_session():
+        print("Calculating session...")
+
+    wait_for_condition >> extract_task >> calculate_task
 
 
 ## Potential concerns
@@ -94,4 +146,8 @@ It was decided to keep empty sessions. Events with empty sessions are also impor
 
 Storing everything in one table would make structural analysis easier, but could lead to some problems: Depending on the data specifics, there could be a significant imbalance with zero sessions, which might cause issues during calculations, like skew (this can be fixed by filtering out the data). If there are a lot of data with zero sessions, partitioning by flag (whether there is a session or not) can also be done, which will improve performance when filtering.
 
+Below is shown potential architecture with 2 tables 
 
+## Potential other arch 
+
+![Logo](arch_new.png)
