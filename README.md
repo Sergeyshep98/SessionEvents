@@ -19,7 +19,26 @@ After the raw layer, we process the data into a cleaned layer (ODS) where sessio
 - **Delta**: Chosen over Iceberg because it’s simpler in structure and its features (like versioning, metadata, and schema evolution) are sufficient for the task. Delta is preferred because of less frequent updates (once per day), while Iceberg’s merge-on-read feature is more beneficial in high-write environments.
 
 ![Logo](arch.png)
-## Steps in Data Processing:
+
+## Project Structure
+
+docker-compose.yml launches MinIO and Spark (master and worker).
+
+Spark can be run in cluster mode if needed. However, everything was done locally.
+
+requirements.txt is provided for local execution.
+
+calculate_session.py contains the main business logic for updating sessions.
+
+extract_raw.py uploads data to the raw layer(ephemeral process without code).
+
+jars/ contains JAR files for Spark.
+
+batches/ stores data batches named according to their ingestion dates.
+
+
+
+## Steps in SessionBuilder(The main business logic of updating sessions is contained in file calculate_session.py):
 
 ### 1. **Dropping Duplicates**
 Any duplicate records with the same combination of `user_id`, `event_id`, `product_code`, and `timestamp` are removed to ensure only unique events are retained.
@@ -46,6 +65,11 @@ A unique session ID is created by combining `user_id`, `product_code`, and the s
 
 ### 8. **Processing Date**
 A `pdate` column is added, which stores only the date part of the `timestamp`. This column is useful for organizing and partitioning the data by date.
+
+To update sessions for existing events, we retrieve users and product codes from the batch  
+and match them with data from the past five days.  
+Additionally, we include user events from six days ago to ensure sessions are correctly assigned  
+for the following day.
 
 ## Summary
 This process transforms raw event data to detect user sessions and organizes the data for further analysis and reporting.
