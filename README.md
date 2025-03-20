@@ -36,6 +36,15 @@ jars/ contains JAR files for Spark.
 
 batches/ stores data batches named according to their ingestion dates.
 
+set_minio.sh - Creating a bucket in S3, adding files that imitate raw data, and creating a role in S3. This file is executed when the container is started.
+
+**Before starting**
+1) Start docker-compose.yml
+
+2) downloading aws-java-sdk-bundle: curl -L -o jars/aws-java-sdk-bundle-1.12.262.jar "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar"
+
+3) downloading delta-core: curl -L -o jars/delta-core_2.12-2.2.0.jar "https://repo1.maven.org/maven2/io/delta/delta-core_2.12/2.2.0/delta-core_2.12-2.2.0.jar"
+4) downloading delta-core: curl -L -o jars/delta-core_2.12-2.2.0.jar "https://repo1.maven.org/maven2/io/delta/delta-core_2.12/2.2.0/delta-core_2.12-2.2.0.jar"                                                                   
 
 
 ## Steps in SessionBuilder(The main business logic of updating sessions is contained in file calculate_session.py):
@@ -66,14 +75,22 @@ A unique session ID is created by combining `user_id`, `product_code`, and the s
 ### 8. **Processing Date**
 A `pdate` column is added, which stores only the date part of the `timestamp`. This column is useful for organizing and partitioning the data by date.
 
+### 9. **Incremental strategy**
 To update sessions for existing events, we retrieve users and product codes from the batch  
 and match them with data from the past five days.  
 Additionally, we include user events from six days ago to ensure sessions are correctly assigned  
 for the following day.
 
+### 10. **Using Merge**
+For touching only updated files. This approach allows us to implement idempotent process, because it doesn't matter when we launch script.
+
+
+
 ## Potential concerns
 This process transforms raw event data to detect user sessions and organizes the data for further analysis and reporting.
 It was decided to keep empty sessions. Events with empty sessions are also important for the business, as native (non-user) events can reveal errors and bugs in the system. Initially, there was a plan to store them in a separate table and use them in incremental calculations. If an event is assigned a session, it would be removed from the empty sessions table using merge logic. However, this creates a problem with synchronizing updates between two tables. If one table updates and the other does not for some reason, the data in both tables will no longer reflect reality.
+
+
 
 Storing everything in one table would make structural analysis easier, but could lead to some problems: Depending on the data specifics, there could be a significant imbalance with zero sessions, which might cause issues during calculations, like skew (this can be fixed by filtering out the data). If there are a lot of data with zero sessions, partitioning by flag (whether there is a session or not) can also be done, which will improve performance when filtering.
 
