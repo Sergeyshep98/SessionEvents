@@ -136,6 +136,7 @@ with DAG(
         print("Calculating session...")
 
     wait_for_condition >> extract_task >> calculate_task
+```
 
 
 ## Potential concerns
