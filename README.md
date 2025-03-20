@@ -71,7 +71,7 @@ and match them with data from the past five days.
 Additionally, we include user events from six days ago to ensure sessions are correctly assigned  
 for the following day.
 
-## Summary
+## Potential concerns
 This process transforms raw event data to detect user sessions and organizes the data for further analysis and reporting.
 It was decided to keep empty sessions. Events with empty sessions are also important for the business, as native (non-user) events can reveal errors and bugs in the system. Initially, there was a plan to store them in a separate table and use them in incremental calculations. If an event is assigned a session, it would be removed from the empty sessions table using merge logic. However, this creates a problem with synchronizing updates between two tables. If one table updates and the other does not for some reason, the data in both tables will no longer reflect reality.
 
